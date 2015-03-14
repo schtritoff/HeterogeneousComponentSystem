@@ -34,6 +34,9 @@
     <Reference Include="Cloo">
       <HintPath>..\packages\Sourceforge.Cloo.0.9.1\lib\net35\Cloo.dll</HintPath>
     </Reference>
+    <Reference Include="ManOCL">
+      <HintPath>..\Libs\ManOCL.dll</HintPath>
+    </Reference>
     <Reference Include="OpenCLTemplate, Version=1.1.6.5, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libs\OpenCLTemplate.dll</HintPath>

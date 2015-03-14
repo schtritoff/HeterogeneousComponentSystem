@@ -16,7 +16,11 @@ namespace Platform
         public void AssembleComponents()
         {
             //get components path
-            var componentsPath = Directory.GetCurrentDirectory() + @"\" + "Components";
+
+            var codeBase = System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase;
+            var pathFromUri = Uri.UnescapeDataString((new UriBuilder(codeBase)).Path);
+            var path = Path.GetDirectoryName(pathFromUri);
+            var componentsPath = path + @"\" + "Components";
             if (!Directory.Exists(componentsPath))
             {
                 Directory.CreateDirectory(componentsPath);
