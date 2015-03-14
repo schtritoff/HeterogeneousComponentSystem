@@ -23,7 +23,7 @@ namespace Platform
             }
 
             //put all components into catalog
-            var catalog = new DirectoryCatalog(componentsPath, "*.dll");
+            var catalog = new DirectoryCatalog(componentsPath, "*.component.dll");
 
             //create container
             var container = new CompositionContainer(catalog);
