@@ -1,4 +1,4 @@
-Project demonstrating CBSE using .NET MEF for university thesis.
+Project demonstrating CBSE on heterogeneous system using .NET MEF for university thesis.
 
 ####How to run project?
  - git clone
