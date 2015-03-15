@@ -33,6 +33,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.OkButton = new System.Windows.Forms.Button();
             this.DeviceComboBox = new System.Windows.Forms.ComboBox();
+            this.KernelsComboBox = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // PlatformComboBox
@@ -47,7 +49,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(12, 11);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(45, 13);
             this.label1.TabIndex = 2;
@@ -56,7 +58,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 61);
+            this.label2.Location = new System.Drawing.Point(12, 64);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 13);
             this.label2.TabIndex = 2;
@@ -64,7 +66,7 @@
             // 
             // OkButton
             // 
-            this.OkButton.Location = new System.Drawing.Point(356, 124);
+            this.OkButton.Location = new System.Drawing.Point(356, 171);
             this.OkButton.Name = "OkButton";
             this.OkButton.Size = new System.Drawing.Size(81, 23);
             this.OkButton.TabIndex = 4;
@@ -76,19 +78,39 @@
             // 
             this.DeviceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.DeviceComboBox.FormattingEnabled = true;
-            this.DeviceComboBox.Location = new System.Drawing.Point(12, 81);
+            this.DeviceComboBox.Location = new System.Drawing.Point(12, 80);
             this.DeviceComboBox.Name = "DeviceComboBox";
             this.DeviceComboBox.Size = new System.Drawing.Size(425, 21);
             this.DeviceComboBox.TabIndex = 0;
+            // 
+            // KernelsComboBox
+            // 
+            this.KernelsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.KernelsComboBox.FormattingEnabled = true;
+            this.KernelsComboBox.Location = new System.Drawing.Point(12, 133);
+            this.KernelsComboBox.Name = "KernelsComboBox";
+            this.KernelsComboBox.Size = new System.Drawing.Size(425, 21);
+            this.KernelsComboBox.TabIndex = 0;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 117);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(42, 13);
+            this.label3.TabIndex = 2;
+            this.label3.Text = "Kernels";
             // 
             // OpenClDeviceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(449, 169);
+            this.ClientSize = new System.Drawing.Size(449, 210);
             this.Controls.Add(this.OkButton);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.KernelsComboBox);
             this.Controls.Add(this.DeviceComboBox);
             this.Controls.Add(this.PlatformComboBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -106,5 +128,7 @@
         public System.Windows.Forms.ComboBox PlatformComboBox;
         private System.Windows.Forms.Button OkButton;
         public System.Windows.Forms.ComboBox DeviceComboBox;
+        public System.Windows.Forms.ComboBox KernelsComboBox;
+        private System.Windows.Forms.Label label3;
     }
 }

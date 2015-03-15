@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Reflection;
+using System.Windows.Forms;
 using Cloo;
 using ComponentContract;
 
@@ -8,7 +11,7 @@ namespace TransformationGPU
 {
     public class Gpu : TransformationContract
     {
-        private OpenClDeviceForm _openClDeviceForm;
+        private readonly OpenClDeviceForm _openClDeviceForm;
 
         public Gpu()
         {
@@ -21,11 +24,19 @@ namespace TransformationGPU
 
         public override Bitmap ApplyTransformation(Bitmap image)
         {
-            _openClDeviceForm.ShowDialog();
+            _openClDeviceForm.ShowForm();
 
             var start = DateTime.Now;
 
-            var newImg = TransformImageGrayscaleOpenCl(image);
+            var newImg = image; //return unchanged if transformation fails
+            try
+            {
+                newImg = TransformImageGrayscaleOpenCl(image);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+            }
 
             Duration = DateTime.Now.Subtract(start);
             return newImg;
@@ -34,51 +45,80 @@ namespace TransformationGPU
 
         #region OpenCL
 
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                //src: http://stackoverflow.com/a/283917/1155121
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                var uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
         public Bitmap TransformImageGrayscaleOpenCl(Bitmap sourceImage)
         {
-            var imgWidth = sourceImage.Width;
-            var imgHeight = sourceImage.Height;
-            var channels = 4; // you should beware of the pixel format of the final image. ARGB in our case so there are 4 bytes per pixel.
-            var bufferSize = imgWidth * imgHeight * channels;
-
-            //ask user for platform
+            //set user chosen device and platform
             var platform = _openClDeviceForm.PlatformComboBox.SelectedValue as ComputePlatform;
             var device = _openClDeviceForm.DeviceComboBox.SelectedValue as ComputeDevice;
 
+            //init context and command queue
             var cpl = new ComputeContextPropertyList(platform);
             var context = new ComputeContext(ComputeDeviceTypes.Default, cpl, null, IntPtr.Zero);
             var commands = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
 
+            //prepare vars for image buffers
+            var imgWidth = sourceImage.Width;
+            var imgHeight = sourceImage.Height;
+            const int channels = 4; // pixel format (depth), ARGB => 4 bytes per pixel
+            var bufferSize = imgWidth * imgHeight * channels;
+
+            //init buffers for bitmap exchange between host and OpenCL device
             var clBufferIn = new ComputeBuffer<byte>(context, ComputeMemoryFlags.ReadOnly, bufferSize);
             var clBufferOut = new ComputeBuffer<byte>(context, ComputeMemoryFlags.WriteOnly, bufferSize);
 
-            //prepare prepare image for opencl
-            BitmapData importBitmapData = sourceImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            //write source image to buffer available to OpenCL device
+            var importBitmapData = sourceImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             commands.Write(clBufferIn, true, 0, clBufferIn.Size, importBitmapData.Scan0, null);
             sourceImage.UnlockBits(importBitmapData);
 
-            string clKernel = @"
-kernel void BitmapKernel(global read_only uchar4* arrayIn, global write_only uchar4* arrayOut)
-{
-    int gid = get_global_id(0);
-// Even though the Bitmap format will be ARGB this array will be parsed as BGRA. So be careful with that. No, I don't know why it works like this. Ask Microsoft :)
-uint gray =  arrayIn[gid][0] * 0.07 + arrayIn[gid][1]* 0.72 + arrayIn[gid][2]*0.21;
-arrayOut[gid] = (uchar4)(gray,gray,gray, 255); // This is full red/half transparent color.
-//int luma = (int)(c.R * 0.3 + c.G * 0.59 + c.B * 0.11);
-}";
+            //set user chosen kernel
+            //var clKernel = File.ReadAllText(AssemblyDirectory + @"\" + "TransformGPU.kernel.cl");
+            var clKernel =  File.ReadAllText(_openClDeviceForm.KernelsComboBox.SelectedValue as string);
+            
+            //compile OpenCL kernel program
             var program = new ComputeProgram(context, clKernel);
-            program.Build(null, null, null, IntPtr.Zero);
-            var kernel = program.CreateKernel("BitmapKernel");
+            try
+            {
+                //program.Build(null, "-cl-std=CL1.2", null, IntPtr.Zero); //compiler directive: minimum OpenCL version
+                program.Build(null, null, null, IntPtr.Zero);
+            }
+            catch (Exception ex)
+            {
+                //catch and display compilation errors
+                MessageBox.Show(program.GetBuildLog(device) + "\n" + program.GetBuildStatus(device));
+                //catch and display OpenCL program errors
+                MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+                //return unchanged bitmap image, exit from method
+                return sourceImage;
+            }
+
+            //instantiate kernel program
+            var kernel = program.CreateKernel("img_trans");
+            //set args for kernel program
             kernel.SetMemoryArgument(0, clBufferIn);
             kernel.SetMemoryArgument(1, clBufferOut);
+            //fire kernel program
             commands.Execute(kernel, null, new long[] { imgWidth * imgHeight }, null, null);
             
-            //read image from opencl
-            Bitmap exportImage = new Bitmap(imgWidth, imgHeight, PixelFormat.Format32bppArgb);
-            BitmapData exportBitmapData = exportImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            //read modified image from buffer where OpenCL stored exported image
+            var exportImage = new Bitmap(imgWidth, imgHeight, PixelFormat.Format32bppArgb);
+            var exportBitmapData = exportImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             commands.Read(clBufferOut, true, 0, clBufferOut.Size, exportBitmapData.Scan0, null);
             exportImage.UnlockBits(exportBitmapData);
 
+            //return modified bitmap image
             return exportImage;
         }
 
