@@ -19,7 +19,7 @@ namespace TransformationCPU
 
             var exportImage = MakeGrayscale3(image);
 
-            Metrics = DateTime.Now.Subtract(start);
+            Duration = DateTime.Now.Subtract(start);
 
             return exportImage;
         }
@@ -41,7 +41,7 @@ namespace TransformationCPU
 
                     var c = source.GetPixel(x, y);
 
-                    int luma = (int)(c.R * 0.3 + c.G * 0.59 + c.B * 0.11);
+                    int luma = (int)(c.R * 0.21 + c.G * 0.72 + c.B * 0.07);
 
                     bm.SetPixel(x, y, Color.FromArgb(luma, luma, luma));
 

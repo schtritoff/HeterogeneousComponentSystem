@@ -161,7 +161,7 @@ namespace Platform
             var loadedOk = LoadImage(newImg,_selectedImageIndex+1);
 
             //show some metrics
-            TransformationMetricLabel.Text = (loadedOk ? "Last trasformation took \n"+selectedTransformation.Metrics.TotalMilliseconds + " ms" : String.Empty);
+            TransformationMetricLabel.Text = (loadedOk ? "Last trasformation took \n"+selectedTransformation.Duration.TotalMilliseconds + " ms" : String.Empty);
         }
 
         private void LoadImageButton_Click(object sender, EventArgs e)

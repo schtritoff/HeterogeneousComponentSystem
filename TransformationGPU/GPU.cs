@@ -1,102 +1,83 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using Cloo;
 using ComponentContract;
-using ManOCL;
 
 namespace TransformationGPU
 {
     public class Gpu : TransformationContract
     {
+        private OpenClDeviceForm _openClDeviceForm;
+
         public Gpu()
         {
             ComponentName = "Grayscale [OpenCL]";
             ComponentDescription = "Image transformation OpenCL";
             ComponentAuthor = "Tomislav Štritof";
+
+            _openClDeviceForm = new OpenClDeviceForm();
         }
 
         public override Bitmap ApplyTransformation(Bitmap image)
         {
+            _openClDeviceForm.ShowDialog();
+
             var start = DateTime.Now;
 
             var newImg = TransformImageGrayscaleOpenCl(image);
 
-            Metrics = DateTime.Now.Subtract(start);
-            return image;
+            Duration = DateTime.Now.Subtract(start);
+            return newImg;
         }
 
 
         #region OpenCL
 
-        private const string kernel = @"
-__kernel void imaging1(__read_only  image2d_t srcImg,
-                       __write_only image2d_t dstImg)
-{
-  const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
-    CLK_ADDRESS_CLAMP_TO_EDGE | //Clamp to zeros
-    CLK_FILTER_LINEAR;
-  int2 coord = (int2)(get_global_id(0), get_global_id(1));
-  uint4 bgra = read_imageui(srcImg, smp, coord); //The byte order is BGRA
-  float4 bgrafloat = convert_float4(bgra) / 255.0f; //Convert to normalized [0..1] float
-  //Convert RGB to luminance (make the image grayscale).
-  float luminance =  sqrt(0.241f * bgrafloat.z * bgrafloat.z + 0.691f * 
-                      bgrafloat.y * bgrafloat.y + 0.068f * bgrafloat.x * bgrafloat.x);
-  bgra.x = bgra.y = bgra.z = (uint) (luminance * 255.0f);
-  bgra.w = 255;
-  write_imageui(dstImg, coord, bgra);
-}
-";
-
-        private static Bitmap TransformImageGrayscaleOpenCl_old(Bitmap sourceImage)
+        public Bitmap TransformImageGrayscaleOpenCl(Bitmap sourceImage)
         {
-            var exportImage = new Bitmap(sourceImage.Width, sourceImage.Height, sourceImage.PixelFormat);
+            var imgWidth = sourceImage.Width;
+            var imgHeight = sourceImage.Height;
+            var channels = 4; // you should beware of the pixel format of the final image. ARGB in our case so there are 4 bytes per pixel.
+            var bufferSize = imgWidth * imgHeight * channels;
 
-            //Initializes OpenCL Platforms and Devices and sets everything up
-            CLCalc.InitCL(ComputeDeviceTypes.Gpu,0);
+            //ask user for platform
+            var platform = _openClDeviceForm.PlatformComboBox.SelectedValue as ComputePlatform;
+            var device = _openClDeviceForm.DeviceComboBox.SelectedValue as ComputeDevice;
 
-            //list devices to debug console
-            foreach (var computeDevice in CLCalc.CLDevices)
-            {
-                System.Diagnostics.Debug.WriteLine(computeDevice.Platform.Name + ", " + computeDevice.Name + ", " + computeDevice.OpenCLCVersionString);
-            }
+            var cpl = new ComputeContextPropertyList(platform);
+            var context = new ComputeContext(ComputeDeviceTypes.All, cpl, null, IntPtr.Zero);
+            var commands = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
 
-            //kernel code for grayscale transformation, src: http://www.codeproject.com/Articles/502829/GPGPU-image-processing-basics-using-OpenCL-NET
-            const string kernel = @"
-__kernel void imaging1(__read_only  image2d_t srcImg,
-                       __write_only image2d_t dstImg)
+            var clBufferIn = new ComputeBuffer<byte>(context, ComputeMemoryFlags.ReadOnly, bufferSize);
+            var clBufferOut = new ComputeBuffer<byte>(context, ComputeMemoryFlags.WriteOnly, bufferSize);
+
+            //prepare prepare image for opencl
+            BitmapData importBitmapData = sourceImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            commands.Write(clBufferIn, true, 0, clBufferIn.Size, importBitmapData.Scan0, null);
+            sourceImage.UnlockBits(importBitmapData);
+
+            string clKernel = @"
+kernel void BitmapKernel(global read_only uchar4* arrayIn, global write_only uchar4* arrayOut)
 {
-  const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
-    CLK_ADDRESS_CLAMP_TO_EDGE | //Clamp to zeros
-    CLK_FILTER_LINEAR;
-  int2 coord = (int2)(get_global_id(0), get_global_id(1));
-  uint4 bgra = read_imageui(srcImg, smp, coord); //The byte order is BGRA
-  float4 bgrafloat = convert_float4(bgra) / 255.0f; //Convert to normalized [0..1] float
-  //Convert RGB to luminance (make the image grayscale).
-  float luminance =  sqrt(0.241f * bgrafloat.z * bgrafloat.z + 0.691f * 
-                      bgrafloat.y * bgrafloat.y + 0.068f * bgrafloat.x * bgrafloat.x);
-  bgra.x = bgra.y = bgra.z = (uint) (luminance * 255.0f);
-  bgra.w = 255;
-  write_imageui(dstImg, coord, bgra);
-}
-";
-            //compile kernel program
-            CLCalc.Program.Compile(kernel);
-            var kernelGrayscale = new CLCalc.Program.Kernel("imaging1");
-
-            var imgIn = new CLCalc.Program.Image2D(sourceImage);
-            var imgOut = new CLCalc.Program.Image2D(sourceImage);
-
-            imgIn.WriteBitmap(sourceImage);
-
-            kernelGrayscale.Execute(new CLCalc.Program.MemoryObject[] { imgIn, imgOut }, new[] { sourceImage.Width - 6, sourceImage.Height - 6 });
-
-            return imgOut.ReadBitmap();
-        }
-
-        private static Bitmap TransformImageGrayscaleOpenCl(Bitmap sourceImage)
-        {
-            var exportImage = new Bitmap(sourceImage.Width, sourceImage.Height, sourceImage.PixelFormat);
-
-            Kernel 
+    int gid = get_global_id(0);
+// Even though the Bitmap format will be ARGB this array will be parsed as BGRA. So be careful with that. No, I don't know why it works like this. Ask Microsoft :)
+uint gray =  arrayIn[gid][0] * 0.07 + arrayIn[gid][1]* 0.72 + arrayIn[gid][2]*0.21;
+arrayOut[gid] = (uchar4)(gray,gray,gray, 255); // This is full red/half transparent color.
+//int luma = (int)(c.R * 0.3 + c.G * 0.59 + c.B * 0.11);
+}";
+            var program = new ComputeProgram(context, clKernel);
+            program.Build(null, null, null, IntPtr.Zero);
+            var kernel = program.CreateKernel("BitmapKernel");
+            kernel.SetMemoryArgument(0, clBufferIn);
+            kernel.SetMemoryArgument(1, clBufferOut);
+            commands.Execute(kernel, null, new long[] { imgWidth * imgHeight }, null, null);
+            
+            //read image from opencl
+            Bitmap exportImage = new Bitmap(imgWidth, imgHeight, PixelFormat.Format32bppArgb);
+            BitmapData exportBitmapData = exportImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            commands.Read(clBufferOut, true, 0, clBufferOut.Size, exportBitmapData.Scan0, null);
+            exportImage.UnlockBits(exportBitmapData);
 
             return exportImage;
         }

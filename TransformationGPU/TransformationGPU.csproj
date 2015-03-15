@@ -31,23 +31,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cloo">
-      <HintPath>..\packages\Sourceforge.Cloo.0.9.1\lib\net35\Cloo.dll</HintPath>
-    </Reference>
-    <Reference Include="ManOCL">
-      <HintPath>..\Libs\ManOCL.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenCLTemplate, Version=1.1.6.5, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Cloo, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libs\OpenCLTemplate.dll</HintPath>
+      <HintPath>..\packages\Sourceforge.Cloo.0.9.1\lib\net35\Cloo.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GPU.cs" />
+    <Compile Include="OpenClDeviceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OpenClDeviceForm.Designer.cs">
+      <DependentUpon>OpenClDeviceForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,13 +58,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="grayscale.kernel.cl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="OpenCLTemplate.dll" />
+    <EmbeddedResource Include="OpenClDeviceForm.resx">
+      <DependentUpon>OpenClDeviceForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

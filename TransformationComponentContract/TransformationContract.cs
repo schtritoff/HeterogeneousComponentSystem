@@ -17,6 +17,6 @@ namespace ComponentContract
         /// <summary>
         /// Transformation duration. Available after applying transformation.
         /// </summary>
-        public TimeSpan Metrics { get; protected set; }
+        public TimeSpan Duration { get; protected set; }
     }
 }
