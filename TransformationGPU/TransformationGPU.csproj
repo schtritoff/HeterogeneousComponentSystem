@@ -52,7 +52,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TransformationComponentContract\ComponentContract.csproj">
+    <ProjectReference Include="..\ComponentContract\ComponentContract.csproj">
       <Project>{68d4aa52-b71f-4720-bc98-56927d97d8f5}</Project>
       <Name>ComponentContract</Name>
     </ProjectReference>

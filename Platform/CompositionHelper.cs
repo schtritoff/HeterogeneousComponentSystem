@@ -9,14 +9,13 @@ namespace Platform
 {
     public class CompositionHelper
     {
-        //property holding data about loaded components
+        //property holding loaded components
         [ImportMany]
         public IEnumerable<Lazy<TransformationContract>> AvailableTransformations { get; protected set; }
 
         public void AssembleComponents()
         {
             //get components path
-
             var codeBase = System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase;
             var pathFromUri = Uri.UnescapeDataString((new UriBuilder(codeBase)).Path);
             var path = Path.GetDirectoryName(pathFromUri);

@@ -31,7 +31,7 @@ namespace TransformationGPU
             var newImg = image; //return unchanged if transformation fails
             try
             {
-                newImg = TransformImageGrayscaleOpenCl(image);
+                newImg = TransformImageOpenCl(image);
             }
             catch (Exception ex)
             {
@@ -57,7 +57,8 @@ namespace TransformationGPU
             }
         }
 
-        public Bitmap TransformImageGrayscaleOpenCl(Bitmap sourceImage)
+        //inspired by: http://sourceforge.net/p/cloo/discussion/1048266/thread/cb07b92b/#97c7
+        public Bitmap TransformImageOpenCl(Bitmap sourceImage)
         {
             //set user chosen device and platform
             var platform = _openClDeviceForm.PlatformComboBox.SelectedValue as ComputePlatform;

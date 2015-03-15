@@ -40,7 +40,7 @@ namespace Platform
             else 
                 _imagesList.Add(bitmapImage);
 
-            //select that image
+            //show new image
             _selectedImageIndex = _imagesList.FindIndex(img => CompareMemCmp(img, bitmapImage));
             ShowImage(_selectedImageIndex);
 
@@ -54,7 +54,7 @@ namespace Platform
         }
 
         /// <summary>
-        /// src: http://stackoverflow.com/a/2038515/1155121
+        /// Compare two bitmaps, src: http://stackoverflow.com/a/2038515/1155121
         /// </summary>
         /// <param name="b1"></param>
         /// <param name="b2"></param>
@@ -95,7 +95,7 @@ namespace Platform
 
         private void PlatformMainForm_Load(object sender, EventArgs e)
         {
-            //initialize
+            //initialize open file dialog
             openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
             openFileDialog.Filter = "Image file|*.jpg;*.bmp";
@@ -113,9 +113,9 @@ namespace Platform
             //helpers
             var componentsAreFound = false;
 
-            //hash array holding loaded components
+            //hash table holding loaded components
             var componentsList = new Dictionary<ComponentContract.TransformationContract, string>();
-                
+
             foreach (var transformation in _compositionHelper.AvailableTransformations)
             {
                 componentsAreFound = true;
@@ -123,6 +123,7 @@ namespace Platform
                 componentsList.Add(transformation.Value, transformation.Value.ComponentName);
             }
 
+            //show/hide UI elements
             TransformationsListBox.Visible = componentsAreFound; TransformationsListBox.Update();
             TransformationInfoLabel.Visible = componentsAreFound; TransformationInfoLabel.Update();
             TransformButton.Visible = componentsAreFound; TransformButton.Update();
@@ -134,7 +135,7 @@ namespace Platform
             }
 
             //bind components to listbox
-            TransformationsListBox.DataSource = new BindingSource(componentsList, null);
+            TransformationsListBox.DataSource = new BindingSource(componentsList, null); //GC should clean this up on subsequent load
             TransformationsListBox.DisplayMember = "Value";
             TransformationsListBox.ValueMember = "Key";
         }
@@ -160,12 +161,13 @@ namespace Platform
             //insert after current selected image (and show)
             var loadedOk = LoadImage(newImg,_selectedImageIndex+1);
 
-            //show some metrics
+            //show some metrics if transformation went OK (= image successfuly loaded)
             TransformationMetricLabel.Text = (loadedOk ? "Last trasformation took \n"+selectedTransformation.Duration.TotalMilliseconds + " ms" : String.Empty);
         }
 
         private void LoadImageButton_Click(object sender, EventArgs e)
         {
+            //load new image from file system
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 LoadImage(new Bitmap(openFileDialog.FileName));
@@ -174,6 +176,7 @@ namespace Platform
 
         private void PreviousImageButton_Click(object sender, EventArgs e)
         {
+            //browse previous image in list
             if (_selectedImageIndex == 0)
                 return;
             ShowImage(--_selectedImageIndex);
@@ -181,18 +184,12 @@ namespace Platform
 
         private void NextImageButton_Click(object sender, EventArgs e)
         {
+            //browse next image in list
             if (_selectedImageIndex+1 >= _imagesList.Count)
                 return;
             ShowImage(++_selectedImageIndex);
         }
 
-
-
         #endregion
-
-
-
-
-
     }
 }

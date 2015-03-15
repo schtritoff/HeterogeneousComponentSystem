@@ -15,7 +15,7 @@ namespace ComponentContract
         public abstract Bitmap ApplyTransformation(Bitmap image);
 
         /// <summary>
-        /// Transformation duration. Available after applying transformation.
+        /// Transformation duration.
         /// </summary>
         public TimeSpan Duration { get; protected set; }
     }
