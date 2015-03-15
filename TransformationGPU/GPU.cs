@@ -46,7 +46,7 @@ namespace TransformationGPU
             var device = _openClDeviceForm.DeviceComboBox.SelectedValue as ComputeDevice;
 
             var cpl = new ComputeContextPropertyList(platform);
-            var context = new ComputeContext(ComputeDeviceTypes.All, cpl, null, IntPtr.Zero);
+            var context = new ComputeContext(ComputeDeviceTypes.Default, cpl, null, IntPtr.Zero);
             var commands = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
 
             var clBufferIn = new ComputeBuffer<byte>(context, ComputeMemoryFlags.ReadOnly, bufferSize);
