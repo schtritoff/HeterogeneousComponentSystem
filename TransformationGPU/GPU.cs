@@ -11,26 +11,32 @@ namespace TransformationGPU
 {
     public class Gpu : TransformationContract
     {
+        // Form for platform, device and kernel selection
         private readonly OpenClDeviceForm _openClDeviceForm;
 
         public Gpu()
         {
+            // Inherited from BaseComponent
             ComponentName = "Grayscale [OpenCL]";
             ComponentDescription = "Image transformation OpenCL";
             ComponentAuthor = "Tomislav Štritof";
-
             _openClDeviceForm = new OpenClDeviceForm();
         }
 
+        // Inherited from TransformationContract
         public override Bitmap ApplyTransformation(Bitmap image)
         {
+            // Set OpenCL platform, device and kernel
             _openClDeviceForm.ShowForm();
 
             var start = DateTime.Now;
 
-            var newImg = image; //return unchanged if transformation fails
+            // Return unchanged image if transformation fails
+            var newImg = image;
+
             try
             {
+                // Transform image using OpenCL
                 newImg = TransformImageOpenCl(image);
             }
             catch (Exception ex)
@@ -57,7 +63,7 @@ namespace TransformationGPU
             }
         }
 
-        //inspired by: http://sourceforge.net/p/cloo/discussion/1048266/thread/cb07b92b/#97c7
+        // Adapted from: http://sourceforge.net/p/cloo/discussion/1048266/thread/cb07b92b/#97c7
         public Bitmap TransformImageOpenCl(Bitmap sourceImage)
         {
             //set user chosen device and platform
@@ -80,13 +86,19 @@ namespace TransformationGPU
             var clBufferOut = new ComputeBuffer<byte>(context, ComputeMemoryFlags.WriteOnly, bufferSize);
 
             //write source image to buffer available to OpenCL device
-            var importBitmapData = sourceImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            var importBitmapData = sourceImage.LockBits(
+                new Rectangle(0, 0, imgWidth, imgHeight),
+                ImageLockMode.ReadWrite,
+                PixelFormat.Format32bppArgb);
             commands.Write(clBufferIn, true, 0, clBufferIn.Size, importBitmapData.Scan0, null);
             sourceImage.UnlockBits(importBitmapData);
 
             //set user chosen kernel
             //var clKernel = File.ReadAllText(AssemblyDirectory + @"\" + "TransformGPU.kernel.cl");
-            var clKernel =  File.ReadAllText(_openClDeviceForm.KernelsComboBox.SelectedValue as string);
+// ReSharper disable AssignNullToNotNullAttribute
+            var clKernel =  
+                File.ReadAllText(_openClDeviceForm.KernelsComboBox.SelectedValue as string);
+// ReSharper restore AssignNullToNotNullAttribute
             
             //compile OpenCL kernel program
             var program = new ComputeProgram(context, clKernel);
@@ -115,7 +127,10 @@ namespace TransformationGPU
             
             //read modified image from buffer where OpenCL stored exported image
             var exportImage = new Bitmap(imgWidth, imgHeight, PixelFormat.Format32bppArgb);
-            var exportBitmapData = exportImage.LockBits(new Rectangle(0, 0, imgWidth, imgHeight), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+            var exportBitmapData = exportImage.LockBits(
+                new Rectangle(0, 0, imgWidth, imgHeight),
+                ImageLockMode.ReadWrite,
+                PixelFormat.Format32bppArgb);
             commands.Read(clBufferOut, true, 0, clBufferOut.Size, exportBitmapData.Scan0, null);
             exportImage.UnlockBits(exportBitmapData);
 

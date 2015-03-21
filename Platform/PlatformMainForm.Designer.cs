@@ -48,7 +48,7 @@
             // 
             // LoadImageButton
             // 
-            this.LoadImageButton.Location = new System.Drawing.Point(19, 19);
+            this.LoadImageButton.Location = new System.Drawing.Point(18, 19);
             this.LoadImageButton.Name = "LoadImageButton";
             this.LoadImageButton.Size = new System.Drawing.Size(160, 23);
             this.LoadImageButton.TabIndex = 0;
@@ -96,7 +96,7 @@
             // 
             this.PreviousImageButton.Location = new System.Drawing.Point(18, 48);
             this.PreviousImageButton.Name = "PreviousImageButton";
-            this.PreviousImageButton.Size = new System.Drawing.Size(60, 23);
+            this.PreviousImageButton.Size = new System.Drawing.Size(55, 23);
             this.PreviousImageButton.TabIndex = 1;
             this.PreviousImageButton.Text = "<<<";
             this.PreviousImageButton.UseVisualStyleBackColor = true;
@@ -114,9 +114,9 @@
             // 
             // NextImageButton
             // 
-            this.NextImageButton.Location = new System.Drawing.Point(118, 48);
+            this.NextImageButton.Location = new System.Drawing.Point(123, 48);
             this.NextImageButton.Name = "NextImageButton";
-            this.NextImageButton.Size = new System.Drawing.Size(60, 23);
+            this.NextImageButton.Size = new System.Drawing.Size(55, 23);
             this.NextImageButton.TabIndex = 2;
             this.NextImageButton.Text = ">>>";
             this.NextImageButton.UseVisualStyleBackColor = true;
@@ -134,12 +134,11 @@
             // ImageNumberLabel
             // 
             this.ImageNumberLabel.AutoSize = true;
-            this.ImageNumberLabel.Location = new System.Drawing.Point(87, 54);
+            this.ImageNumberLabel.Location = new System.Drawing.Point(83, 54);
             this.ImageNumberLabel.Name = "ImageNumberLabel";
             this.ImageNumberLabel.Size = new System.Drawing.Size(24, 13);
             this.ImageNumberLabel.TabIndex = 3;
             this.ImageNumberLabel.Text = "0/0";
-            this.ImageNumberLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // TransformButton
             // 
@@ -180,7 +179,7 @@
             this.ClientSize = new System.Drawing.Size(734, 461);
             this.Controls.Add(this.SplitContainerMain);
             this.Name = "PlatformMainForm";
-            this.Text = "Platform";
+            this.Text = "Heterogeneous Component System - Platform";
             this.Load += new System.EventHandler(this.PlatformMainForm_Load);
             this.SplitContainerMain.Panel1.ResumeLayout(false);
             this.SplitContainerMain.Panel1.PerformLayout();

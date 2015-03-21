@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -11,43 +10,44 @@ namespace TransformationGPU
     {
         private Dictionary<ComputeDevice, string> _deviceList;
         private Dictionary<string, string> _kernelList; 
+
         public OpenClDeviceForm()
         {
             InitializeComponent();
 
-            //setup platforms
-            var platformList = ComputePlatform.Platforms.ToDictionary(platform => platform,
-                                                                      platform =>
-                                                                      platform.Name + ", " + platform.Version);
+            // Setup platforms
+            var platformList = ComputePlatform.Platforms.ToDictionary(
+                platform => platform,
+                platform => platform.Name + ", " + platform.Version);
             PlatformComboBox.DataSource = new BindingSource(platformList,null);
             PlatformComboBox.DisplayMember = "Value";
             PlatformComboBox.ValueMember = "Key";
 
-            //setup devices
-            _deviceList = ((ComputePlatform) PlatformComboBox.SelectedValue).Devices.ToDictionary(device => device,
-                                                                                                 device =>
-                                                                                                 device.Name + ", " +
-                                                                                                 device.
-                                                                                                     OpenCLCVersionString);
+            // Setup devices
+            _deviceList = ((ComputePlatform) PlatformComboBox.SelectedValue).Devices.ToDictionary(
+                device => device,
+                device => device.Name + ", " + device.OpenCLCVersionString);
 
             DeviceComboBox.DataSource = new BindingSource(_deviceList, null);
             DeviceComboBox.DisplayMember = "Value";
             DeviceComboBox.ValueMember = "Key";
             PlatformComboBox.SelectedIndexChanged += PlatformComboBox_SelectedIndexChanged;
 
-            //setup kernels
+            // Setup kernels
             FillKernelsDictionary();
             KernelsComboBox.DataSource = new BindingSource(_kernelList, null);
             KernelsComboBox.DisplayMember = "Value";
             KernelsComboBox.ValueMember = "Key";
         }
 
+        // On show, refresh kernel list
         public void ShowForm()
         {
             FillKernelsDictionary();
             ShowDialog();
         }
 
+        // Populate kernel list from assembly directory
         private void FillKernelsDictionary()
         {
             var path = Gpu.AssemblyDirectory + @"\";
@@ -57,11 +57,9 @@ namespace TransformationGPU
 
         void PlatformComboBox_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            _deviceList = ((ComputePlatform)PlatformComboBox.SelectedValue).Devices.ToDictionary(device => device,
-                                                                                                 device =>
-                                                                                                 device.Name + ", " +
-                                                                                                 device.
-                                                                                                     OpenCLCVersionString);
+            _deviceList = ((ComputePlatform)PlatformComboBox.SelectedValue).Devices.ToDictionary(
+                device => device,
+                device => device.Name + ", " + device.OpenCLCVersionString);
         }
 
         //multiple devices - not implemented
@@ -84,6 +82,6 @@ namespace TransformationGPU
             //    Hide();
             //}
             Hide();
-        } 
+        }
     }
 }

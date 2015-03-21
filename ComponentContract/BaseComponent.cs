@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace ComponentContract
+﻿namespace ComponentContract
 {
     public abstract class BaseComponent
     {

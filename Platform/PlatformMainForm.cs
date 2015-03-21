@@ -12,10 +12,10 @@ namespace Platform
     public partial class PlatformMainForm : Form
     {
         #region Properties
-        private readonly List<Bitmap> _imagesList = new List<Bitmap>(1);
+        private readonly List<Bitmap> _imagesList = new List<Bitmap>();
         private int _selectedImageIndex;
         private CompositionHelper _compositionHelper;
-        private OpenFileDialog openFileDialog;
+        private OpenFileDialog _openFileDialog;
         #endregion
 
         public PlatformMainForm()
@@ -66,7 +66,6 @@ namespace Platform
         {
             if ((b1 == null) != (b2 == null)) return false;
             if (b1.Size != b2.Size) return false;
-
             if (b1 == b2) return true;
 
             var bd1 = b1.LockBits(new Rectangle(new Point(0, 0), b1.Size), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
@@ -74,11 +73,11 @@ namespace Platform
 
             try
             {
-                IntPtr bd1scan0 = bd1.Scan0;
-                IntPtr bd2scan0 = bd2.Scan0;
+                var bd1scan0 = bd1.Scan0;
+                var bd2scan0 = bd2.Scan0;
 
-                int stride = bd1.Stride;
-                int len = stride * b1.Height;
+                var stride = bd1.Stride;
+                var len = stride * b1.Height;
 
                 return memcmp(bd1scan0, bd2scan0, len) == 0;
             }
@@ -96,11 +95,11 @@ namespace Platform
         private void PlatformMainForm_Load(object sender, EventArgs e)
         {
             //initialize open file dialog
-            openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
-            openFileDialog.Filter = "Image file|*.jpg;*.bmp";
-            openFileDialog.AutoUpgradeEnabled = false; //src: https://stackoverflow.com/questions/6751188/openfiledialog-c-slow-on-any-file-better-solution/29048890#29048890
-            openFileDialog.DereferenceLinks = false;
+            _openFileDialog = new OpenFileDialog();
+            _openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+            _openFileDialog.Filter = "Image files|*.BMP;*.JPG;*.GIF;*.PNG;*.TIFF|All files (*.*)|*.*";
+            _openFileDialog.AutoUpgradeEnabled = false; //src: https://stackoverflow.com/questions/6751188/openfiledialog-c-slow-on-any-file-better-solution/29048890#29048890
+            _openFileDialog.DereferenceLinks = false;
         }
 
         private void LoadComponentsButton_Click(object sender, EventArgs e)
@@ -168,9 +167,9 @@ namespace Platform
         private void LoadImageButton_Click(object sender, EventArgs e)
         {
             //load new image from file system
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (_openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                LoadImage(new Bitmap(openFileDialog.FileName));
+                LoadImage(new Bitmap(_openFileDialog.FileName));
             }
         }
 
