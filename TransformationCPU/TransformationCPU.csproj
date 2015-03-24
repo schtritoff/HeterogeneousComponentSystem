@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4DC301E5-D510-4D90-9DBC-939F2BDE2845}</ProjectGuid>
+    <ProjectGuid>{179109C1-F34A-4B1B-964B-F46D452CB43D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TransformationCPU</RootNamespace>
     <AssemblyName>TransformationCPU.component</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,7 +19,7 @@
     <OutputPath>..\Platform\bin\Debug\Components\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>0</WarningLevel>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,20 +30,42 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Cloo, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Sourceforge.Cloo.0.9.1\lib\net35\Cloo.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\TransformationGPU\OpenClDeviceForm.cs">
+      <Link>OpenClDeviceForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\TransformationGPU\OpenClDeviceForm.Designer.cs">
+      <Link>OpenClDeviceForm.Designer.cs</Link>
+    </Compile>
+    <Compile Include="..\TransformationGPU\OpenClTransformation.cs">
+      <Link>OpenClTransformation.cs</Link>
+    </Compile>
     <Compile Include="CPU.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\TransformationGPU\OpenClDeviceForm.resx">
+      <Link>OpenClDeviceForm.resx</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComponentContract\ComponentContract.csproj">
       <Project>{68d4aa52-b71f-4720-bc98-56927d97d8f5}</Project>
       <Name>ComponentContract</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

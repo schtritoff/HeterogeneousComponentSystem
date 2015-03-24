@@ -1,42 +1,47 @@
 ﻿using System;
 using System.Drawing;
+using System.Windows.Forms;
+using Cloo;
 using ComponentContract;
+using OpenClCommon;
 
 namespace TransformationCPU
 {
     public class Cpu : TransformationContract
     {
-        // Inherited from BaseComponent
+        private readonly OpenClTransformation _transformation = new OpenClTransformation();
+
         public Cpu()
         {
-            ComponentName = "Grayscale [CPU]";
-            ComponentDescription = "Image transformation CPU";
+            // Inherited from BaseComponent
+            ComponentName = "Transformation [CPU]";
+            ComponentDescription = "Image transformation";
             ComponentAuthor = "Tomislav Štritof";
         }
 
         // Inherited from TransformationContract
         public override Bitmap ApplyTransformation(Bitmap image)
         {
-            var start = DateTime.Now;
-            var exportImage = MakeGrayscale3(image);
-            Duration = DateTime.Now.Subtract(start);
-            return exportImage;
-        }
+            // Set OpenCL platform, device and kernel
+            _transformation.ChooseDevices(ComputeDeviceTypes.Cpu);
 
-        // Grayscale image, src: http://bobpowell.net/grayscale.aspx
-        private Bitmap MakeGrayscale3(Bitmap source)
-        {
-            var bm = new Bitmap(source.Width, source.Height);
-            for (var y = 0; y < bm.Height; y++)
+            var start = DateTime.Now;
+
+            // Return unchanged image if transformation fails
+            var newImg = image;
+
+            try
             {
-                for (var x = 0; x < bm.Width; x++)
-                {
-                    var c = source.GetPixel(x, y);
-                    var luma = (int)(c.R * 0.21 + c.G * 0.72 + c.B * 0.07);
-                    bm.SetPixel(x, y, Color.FromArgb(luma, luma, luma));
-                }
+                // Transform image using OpenCL
+                newImg = _transformation.TransformImageOpenCl(image);
             }
-            return bm;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+            }
+
+            Duration = DateTime.Now.Subtract(start);
+            return newImg;
         }
     }
 }

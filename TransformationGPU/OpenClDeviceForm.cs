@@ -4,14 +4,14 @@ using System.Linq;
 using System.Windows.Forms;
 using Cloo;
 
-namespace TransformationGPU
+namespace OpenClCommon
 {
     public partial class OpenClDeviceForm : Form
     {
         private Dictionary<ComputeDevice, string> _deviceList;
         private Dictionary<string, string> _kernelList; 
 
-        public OpenClDeviceForm()
+        public OpenClDeviceForm(ComputeDeviceTypes types)
         {
             InitializeComponent();
 
@@ -24,7 +24,7 @@ namespace TransformationGPU
             PlatformComboBox.ValueMember = "Key";
 
             // Setup devices
-            _deviceList = ((ComputePlatform) PlatformComboBox.SelectedValue).Devices.ToDictionary(
+            _deviceList = ((ComputePlatform) PlatformComboBox.SelectedValue).Devices.Where(device => device.Type == types).ToDictionary(
                 device => device,
                 device => device.Name + ", " + device.OpenCLCVersionString);
 
@@ -50,7 +50,7 @@ namespace TransformationGPU
         // Populate kernel list from assembly directory
         private void FillKernelsDictionary()
         {
-            var path = Gpu.AssemblyDirectory + @"\";
+            var path = OpenClTransformation.AssemblyDirectory + @"\";
             const string pathFilter = "*.kernel.cl";
             _kernelList = Directory.GetFiles(path, pathFilter).ToDictionary(pathK => pathK, Path.GetFileName);
         }

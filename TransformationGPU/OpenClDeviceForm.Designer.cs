@@ -1,4 +1,4 @@
-﻿namespace TransformationGPU
+﻿namespace OpenClCommon
 {
     partial class OpenClDeviceForm
     {
@@ -115,7 +115,8 @@
             this.Controls.Add(this.PlatformComboBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "OpenClDeviceForm";
-            this.Text = "OpenCL platform and device";
+            this.Text = "OpenCL configuration";
+            this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();
 

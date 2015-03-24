@@ -2,6 +2,7 @@ Project demonstrating CBSE on heterogeneous system using .NET MEF for my univers
 
 ####How to build project?
  - git clone https://github.com/schtritoff/HeterogeneousComponentSystem.git
+ - .NET framework 4.0 with KB2468871
  - open solution in Visual Studio (>=2012)
  - rebuild solution (VS should automatically install dependancies - Cloo OpenCL library)
  - debug "Platform"

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Platform
@@ -11,11 +12,12 @@ namespace Platform
     
     public partial class PlatformMainForm : Form
     {
-        #region Properties
+        #region private vars
         private readonly List<Bitmap> _imagesList = new List<Bitmap>();
         private int _selectedImageIndex;
         private CompositionHelper _compositionHelper;
         private OpenFileDialog _openFileDialog;
+
         #endregion
 
         public PlatformMainForm()
@@ -100,6 +102,9 @@ namespace Platform
             _openFileDialog.Filter = "Image files|*.BMP;*.JPG;*.GIF;*.PNG;*.TIFF|All files (*.*)|*.*";
             _openFileDialog.AutoUpgradeEnabled = false; //src: https://stackoverflow.com/questions/6751188/openfiledialog-c-slow-on-any-file-better-solution/29048890#29048890
             _openFileDialog.DereferenceLinks = false;
+
+            LoaderPictureBox.Parent = this;
+            LoaderPictureBox.BringToFront();
         }
 
         private void LoadComponentsButton_Click(object sender, EventArgs e)
@@ -155,13 +160,31 @@ namespace Platform
             //transform
             TransformationMetricLabel.Text = "Transformation in progress...";
             TransformationMetricLabel.Update();
-            var newImg = selectedTransformation.ApplyTransformation(img);
+
+            //freeze UI
+            SplitContainerMain.Enabled = false;
+            LoaderPictureBox.Visible = true;
+            LoaderPictureBox.Update();
+
+            //start transformation without blocking UI
+            TransformAsync(selectedTransformation, img);
+        }
+
+        private async void TransformAsync(ComponentContract.TransformationContract component, Bitmap imgSource)
+        {
+            var task = TaskEx.Run(() => component.ApplyTransformation(imgSource));
+            var image = await task;
+
+            //restore UI
+            SplitContainerMain.Enabled = true;
+            LoaderPictureBox.Visible = false;
+            LoaderPictureBox.Update();
 
             //insert after current selected image (and show)
-            var loadedOk = LoadImage(newImg,_selectedImageIndex+1);
+            var loadedOk = LoadImage(image, _selectedImageIndex + 1);
 
             //show some metrics if transformation went OK (= image successfuly loaded)
-            TransformationMetricLabel.Text = (loadedOk ? "Last trasformation took \n"+selectedTransformation.Duration.TotalMilliseconds + " ms" : String.Empty);
+            TransformationMetricLabel.Text = (loadedOk ? "Last trasformation took \n" + component.Duration.TotalMilliseconds + " ms" : String.Empty);
         }
 
         private void LoadImageButton_Click(object sender, EventArgs e)
@@ -190,5 +213,18 @@ namespace Platform
         }
 
         #endregion
+
+        private void RemoveImageButton_Click(object sender, EventArgs e)
+        {
+            //remove current image
+            if (_imagesList.Count>1)
+            {
+                var imgToRemove = _imagesList[_selectedImageIndex];
+                _imagesList.RemoveAt(_selectedImageIndex);
+                imgToRemove.Dispose();
+                _selectedImageIndex = (--_selectedImageIndex == -1 ? 0 : _selectedImageIndex);
+                ShowImage(_selectedImageIndex);
+            }
+        }
     }
 }
